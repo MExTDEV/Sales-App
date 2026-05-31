@@ -1,0 +1,71 @@
+# ToDo
+
+- Mijn Informatie: "Ander mobiel nummer melden" is currently mock-only. Later implement the real workflow to send the request to the responsible admin/HR/backoffice process, including storage, notification and audit logging.
+- Kasblad: functie bouwen voor Cash-storting.
+- Kasblad: echte cash-storting workflow bouwen.
+- Kasblad: administratieve verwerking en clearing-flow bouwen.
+- Kasblad: maandagblokkade koppelen aan echte datum, gebruiker en cashstatus.
+- Kasblad: ERP/offline synchronisatie bouwen.
+- Nieuwe verkoop wizard bouwen.
+- ERP-koppeling afspraak afsluiten.
+- ERP-koppeling verkoopregistratie.
+- ERP-koppeling voorbereiding.
+- Synchronisatie afspraakstatus.
+- Nieuwe verkoop: opleidings/resource-popup verder uitwerken met vragen zoals aantal deelnemers, locatie, gewenste datum, taal, type opleiding en planning.
+- Leads: volledige leadregistratie en opvolging uitwerken vanuit de afspraakfiche.
+- Leads: later echte opslag, ERP-koppeling, notificaties en opvolgflow uitwerken.
+- Technisch beheer: Leadtypes later persistent maken en beheerbaar maken via database.
+- Contactfiche: later echte opslag en ERP-synchronisatie bouwen.
+- Contactpersonen: later validatie voor e-mail, telefoon en dubbele contacten toevoegen.
+- Adressen: later adresvalidatie en landafhankelijke postcodecontrole toevoegen.
+- Opmerkingen: later echte opslag, audit logging en ERP/offline synchronisatie bouwen.
+- Vervolgafspraak: later echte agenda-integratie, conflictcontrole en synchronisatie bouwen.
+- Offertes: later echte ERP-koppeling bouwen om offertes te openen.
+- Verkoophistoriek: later echte document- en artikellijnen uit ERP ophalen.
+- Documenten: later echte documentopslag/download/open-functionaliteit bouwen.
+- Referenties: later echte opslag, validatie en ERP/offline synchronisatie bouwen.
+- Voorraad: verkoopwizard koppelen aan vertegenwoordigersvoorraad.
+- Voorraad: bij Factuur en Order reeds geleverd stock verminderen.
+- Voorraad: bij Order geen stock verminderen.
+- Voorraad: transferaanvragen later koppelen aan echte voorraadbewegingen.
+- Rapportering: later echte omzetgegevens uit ERP ophalen.
+- Rapportering: later filters per vertegenwoordiger/team/land koppelen aan rechtenmodel.
+- Rapportering: later export naar Excel/PDF voorzien indien gewenst.
+- Service Planning: later echte planningdata ophalen en synchroniseren.
+- Interventies: later echte interventiedetails en statusupdates bouwen.
+- Werkbonnen: later werkbonmodule en werkbonuitvoering bouwen.
+- Service: later rechtenmodel verfijnen voor service operators.
+- Werkbonnen koppelen aan interventies.
+- Werkbonnen koppelen aan voorraad.
+- Werkbonnen koppelen aan assets.
+- Digitale handtekening implementeren.
+- Foto-opslag implementeren.
+- ERP-synchronisatie werkbonnen bouwen.
+- Offline synchronisatie werkbonnen bouwen.
+- Configurable validation for required customer signature.
+- Configurable validation for required service-operator signature.
+- Real digital signature capture implementation.
+- Servicecontroles koppelen aan Assettypes.
+- Werkbon afsluiten blokkeren indien verplichte controles ontbreken.
+- Gebruikte materialen koppelen aan echte voorraad.
+- Voorraad automatisch verminderen bij afsluiten werkbon.
+- Assethistoriek koppelen aan werkbonnen.
+- Later koppelen aan echte voorraad van service-operator.
+- Later voorraad verminderen bij afsluiten werkbon.
+- Assets: later echte assetdata ophalen uit ERP.
+- Assets: servicecontrole-type koppelen aan werkboncontroles.
+- Assets: onderhoudsplanning koppelen aan assetfrequentie.
+- Assets: assethistoriek koppelen aan interventies, werkbonnen en contracten.
+- Assets: bepalen welke artikelgroepen service-assets kunnen worden.
+- Contracten koppelen aan echte ERP-contractdata.
+- Contracten koppelen aan assets.
+- Contracten koppelen aan onderhoudsplanning.
+- Contracten koppelen aan interventies en werkbonnen.
+- Automatische melding bij contractverval bouwen.
+- Contractverlenging workflow bouwen.
+- Onderhoud koppelen aan echte assets.
+- Onderhoud koppelen aan contractvoorwaarden.
+- Onderhoud automatisch genereren op basis van onderhoudsfrequentie.
+- Onderhoud koppelen aan serviceplanning.
+- Onderhoud koppelen aan werkbonnen.
+- Onderhoud offline synchroniseren.

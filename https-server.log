@@ -1,0 +1,25 @@
+
+> mext-sales-app@0.1.1 dev
+> next dev --port 3001 --experimental-https
+
+⚠ Self-signed certificates are currently an experimental feature, use with caution.
+⨯ Error downloading mkcert: Error: EPERM: operation not permitted, mkdir 'C:\Users\jand\AppData\Local\mkcert'
+    at async Object.mkdir (node:internal/fs/promises:859:10)
+    at async downloadBinary (C:\Users\jand\Documents\New project\node_modules\next\dist\lib\mkcert.js:92:9)
+    at async createSelfSignedCertificate (C:\Users\jand\Documents\New project\node_modules\next\dist\lib\mkcert.js:138:28)
+    at async runDevServer (C:\Users\jand\Documents\New project\node_modules\next\dist\cli\next-dev.js:348:35)
+    at async Module.nextDev (C:\Users\jand\Documents\New project\node_modules\next\dist\cli\next-dev.js:363:5) {
+  errno: -4048,
+  code: 'EPERM',
+  syscall: 'mkdir',
+  path: 'C:\\Users\\jand\\AppData\\Local\\mkcert'
+}
+⨯ Failed to generate self-signed certificate. Falling back to http. Error: missing mkcert binary
+    at createSelfSignedCertificate (C:\Users\jand\Documents\New project\node_modules\next\dist\lib\mkcert.js:139:54)
+    at async runDevServer (C:\Users\jand\Documents\New project\node_modules\next\dist\cli\next-dev.js:348:35)
+    at async Module.nextDev (C:\Users\jand\Documents\New project\node_modules\next\dist\cli\next-dev.js:363:5)
+▲ Next.js 16.2.4 (Turbopack)
+- Local:         http://localhost:3001
+- Network:       http://192.168.199.114:3001
+✓ Ready in 1783ms
+

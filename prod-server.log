@@ -1,0 +1,8 @@
+
+> mext-sales-app@0.1.1 start
+> next start --port 3001
+
+▲ Next.js 16.2.4
+- Local:         http://localhost:3001
+- Network:       http://192.168.199.114:3001
+✓ Ready in 709ms
