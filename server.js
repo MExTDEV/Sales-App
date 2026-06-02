@@ -1,12 +1,16 @@
-const { spawn } = require("child_process");
+const next = require("next");
+const http = require("http");
 
-const port = process.env.PORT || 3000;
+const port = parseInt(process.env.PORT || "3001", 10);
+const hostname = "0.0.0.0";
 
-const app = spawn("node_modules/.bin/next", ["start", "-p", port], {
-  stdio: "inherit",
-  shell: true,
-});
+const app = next({ dev: false, hostname, port });
+const handle = app.getRequestHandler();
 
-app.on("exit", (code) => {
-  process.exit(code ?? 0);
+app.prepare().then(() => {
+  http.createServer((req, res) => {
+    handle(req, res);
+  }).listen(port, hostname, () => {
+    console.log(`MExT Sales App running on http://${hostname}:${port}`);
+  });
 });
