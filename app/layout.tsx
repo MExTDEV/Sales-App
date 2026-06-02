@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     template: "%s | M.Ex.T. Sales App"
   },
   description:
-    "Phase 4.1 architecture cleanup and stabilization for the internal M.Ex.T. Sales App.",
+    "Phase 4.2 - UI Review & Refinement for the internal M.Ex.T. Sales App.",
   applicationName: "M.Ex.T. Sales App",
   openGraph: {
     title: "M.Ex.T. Sales App",
