@@ -11,6 +11,7 @@ import { LoginPanel } from "@/components/layout/LoginPanel";
 import { MyInfoView } from "@/components/my-info/MyInfoView";
 import { MyPreparationView } from "@/components/preparation/MyPreparationView";
 import { ReportsView } from "@/components/reports/ReportsView";
+import { PstView } from "@/components/pst/PstView";
 import { ServiceView } from "@/components/service/ServiceView";
 import { ServiceAssetsView } from "@/components/service/assets/ServiceAssetsView";
 import { ServiceContractsView } from "@/components/service/contracts/ServiceContractsView";
@@ -31,6 +32,14 @@ import {
   countries,
   createMockUser,
   mockManagedUsers,
+  mockScenarios,
+  pstApprovals,
+  pstProspects,
+  pstRepresentatives,
+  pstRoutes,
+  pstRouteStops,
+  pstSegments,
+  pstVisits,
   teamRepresentatives,
   technicalAssetTypes,
   technicalContractTypes,
@@ -40,17 +49,21 @@ import {
   technicalServiceControls
 } from "@/mock-data";
 import { translate } from "@/lib/i18n";
+import { canAccessPst } from "@/domain/pst/access";
 import type { AppView, Appointment, AppointmentStatus, CountryCode, DesignAssetKey, DesignAssetPreviews, Language, MockScenario, Role, SalesRevenueUpdate } from "@/types/sales";
 
+type PstScreen = Extract<AppView, "pstDashboard" | "pstSegments" | "pstRoutes" | "pstProspection" | "pstMaps" | "pstApprovals" | "pstRepresentatives" | "pstPlanning" | "pstQuality">;
+
 export function SalesApp() {
-  const [role, setRole] = useState<Role>("representative");
-  const [country, setCountry] = useState<CountryCode>("BE");
-  const [language, setLanguage] = useState<Language>("nl");
-  const [scenario, setScenario] = useState<MockScenario>("blocked");
+  const launchDefaults = getLaunchDefaults();
+  const [role, setRole] = useState<Role>(launchDefaults.role);
+  const [country, setCountry] = useState<CountryCode>(launchDefaults.country);
+  const [language, setLanguage] = useState<Language>(launchDefaults.language);
+  const [scenario, setScenario] = useState<MockScenario>(launchDefaults.scenario);
   const selectedCountry = countries.find((item) => item.code === country) ?? countries[0];
-  const [timezone, setTimezone] = useState(selectedCountry.timezone);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [view, setView] = useState<AppView>("dashboard");
+  const [timezone, setTimezone] = useState(launchDefaults.timezone || selectedCountry.timezone);
+  const [isLoggedIn, setIsLoggedIn] = useState(launchDefaults.openApp);
+  const [view, setView] = useState<AppView>(launchDefaults.view);
   const [appointments, setAppointments] = useState<Appointment[]>(appointmentSeed);
   const [selectedAppointmentId, setSelectedAppointmentId] = useState(appointmentSeed[0]?.id ?? "");
   const [depositReported, setDepositReported] = useState(false);
@@ -327,6 +340,24 @@ export function SalesApp() {
           {view === "service" && <ServiceView appointment={selectedAppointment} t={t} user={user} />}
           {view === "inventory" && <StockView lastSync={lastSync} t={t} user={user} />}
           {view === "reports" && <ReportsView t={t} user={user} />}
+          {isPstView(view) && (
+            canAccessPst(user) ? (
+              <PstView
+                approvals={pstApprovals}
+                prospects={pstProspects}
+                representatives={pstRepresentatives}
+                routeStops={pstRouteStops}
+                routes={pstRoutes}
+                screen={toPstScreen(view)}
+                segments={pstSegments}
+                t={t}
+                user={user}
+                visits={pstVisits}
+              />
+            ) : (
+              <AccessDenied title={t("pst.accessDenied.title")} body={t("pst.accessDenied.body")} />
+            )
+          )}
           {view === "servicePlanning" && <ServicePlanningView t={t} user={user} />}
           {view === "serviceInterventions" && <ServiceInterventionsView t={t} user={user} />}
           {view === "serviceWorkOrders" && <ServiceWorkOrdersView serviceControls={technicalServiceControls} t={t} user={user} />}
@@ -387,4 +418,92 @@ function currentSyncTimestamp() {
     minute: "2-digit",
     hour12: false
   });
+}
+
+function getLaunchDefaults() {
+  const fallbackCountry = countries[0];
+  const defaults = {
+    role: "representative" as Role,
+    country: fallbackCountry.code,
+    language: "nl" as Language,
+    scenario: "blocked" as MockScenario,
+    timezone: fallbackCountry.timezone,
+    openApp: false,
+    view: "dashboard" as AppView
+  };
+
+  if (typeof window === "undefined") {
+    return defaults;
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const country = parseCountry(params.get("country")) ?? defaults.country;
+  const countryTimezone = countries.find((item) => item.code === country)?.timezone ?? defaults.timezone;
+
+  return {
+    role: parseRole(params.get("role")) ?? defaults.role,
+    country,
+    language: parseLanguage(params.get("language")) ?? defaults.language,
+    scenario: parseScenario(params.get("scenario")) ?? defaults.scenario,
+    timezone: params.get("timezone") || countryTimezone,
+    openApp: params.get("openApp") === "1" || params.get("openApp") === "true",
+    view: parseInitialView(window.location.pathname, params.get("view"))
+  };
+}
+
+function isPstView(view: AppView) {
+  return view === "pst" || view.startsWith("pst");
+}
+
+function toPstScreen(view: AppView): PstScreen {
+  return view === "pst" ? "pstDashboard" : (view as PstScreen);
+}
+
+function parseInitialView(pathname: string, value: string | null): AppView {
+  if (pathname === "/pst") {
+    return "pstDashboard";
+  }
+
+  return parseAppView(value) ?? "dashboard";
+}
+
+function parseAppView(value: string | null): AppView | undefined {
+  const pstViews: AppView[] = [
+    "pstDashboard",
+    "pstSegments",
+    "pstRoutes",
+    "pstProspection",
+    "pstMaps",
+    "pstApprovals",
+    "pstRepresentatives",
+    "pstPlanning",
+    "pstQuality"
+  ];
+
+  return pstViews.find((view) => view === value);
+}
+
+function AccessDenied({ body, title }: { body: string; title: string }) {
+  return (
+    <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-[0_14px_40px_rgba(15,23,42,0.06)]">
+      <h2 className="text-2xl font-black text-slate-950">{title}</h2>
+      <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">{body}</p>
+    </section>
+  );
+}
+
+function parseRole(value: string | null): Role | undefined {
+  return value === "representative" || value === "sales_leader" || value === "admin" || value === "superadmin" ? value : undefined;
+}
+
+function parseLanguage(value: string | null): Language | undefined {
+  return value === "nl" || value === "fr" || value === "de" ? value : undefined;
+}
+
+function parseCountry(value: string | null): CountryCode | undefined {
+  return countries.some((item) => item.code === value) ? (value as CountryCode) : undefined;
+}
+
+function parseScenario(value: string | null): MockScenario | undefined {
+  return mockScenarios.some((item) => item.id === value) ? (value as MockScenario) : undefined;
 }

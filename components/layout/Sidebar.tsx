@@ -2,6 +2,7 @@
 
 import { roleLabels, sidebarItems } from "@/components/layout/navigation";
 import { SHELL_HEADER_HEIGHT_CLASS } from "@/components/layout/shellConstants";
+import { canAccessPst } from "@/domain/pst/access";
 import { ChevronDown, ChevronLeft, ChevronRight, LogOut } from "lucide-react";
 import { useState } from "react";
 import type { AppView, DesignAssetPreviews, MockUser, TranslationFn } from "@/types/sales";
@@ -49,7 +50,13 @@ export function Sidebar({
         )}
       </div>
       <nav className={`grid gap-1 ${collapsed ? "p-2" : "p-3"}`}>
-        {sidebarItems.filter((item) => !item.superadminOnly || user.role === "superadmin").map((item) => {
+        {sidebarItems.filter((item) => {
+          if (item.superadminOnly && user.role !== "superadmin") {
+            return false;
+          }
+
+          return !item.requiresPstAccess || canAccessPst(user);
+        }).map((item) => {
           const active = item.id === view || item.nested?.some((nested) => nested.id === view);
           const hasChildren = Boolean(item.nested?.length);
           const expanded = hasChildren && !collapsed && (expandedSections[item.labelKey] ?? active);

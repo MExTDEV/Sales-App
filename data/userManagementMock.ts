@@ -30,6 +30,7 @@ export const mockManagedUsers: ManagedUser[] = [
     roleId: "representative",
     isTeamSupervisor: false,
     isActive: true,
+    hasPstAccess: false,
     establishmentNumber: "BE-ROE",
     permissions: defaultPermissions,
     leads: defaultLeads
@@ -46,6 +47,7 @@ export const mockManagedUsers: ManagedUser[] = [
     roleId: "sales_leader",
     isTeamSupervisor: true,
     isActive: true,
+    hasPstAccess: true,
     establishmentNumber: "001",
     permissions: { ...defaultPermissions, reporting: true, contracts: true },
     leads: { ...defaultLeads, training: true }
@@ -62,6 +64,7 @@ export const mockManagedUsers: ManagedUser[] = [
     roleId: "admin",
     isTeamSupervisor: false,
     isActive: false,
+    hasPstAccess: true,
     establishmentNumber: "002",
     permissions: { ...defaultPermissions, reporting: true, contracts: true, training: true },
     leads: { ...defaultLeads, fireDetection: true }
@@ -78,6 +81,7 @@ export const mockManagedUsers: ManagedUser[] = [
     roleId: "service_operator",
     isTeamSupervisor: false,
     isActive: true,
+    hasPstAccess: false,
     establishmentNumber: "NL-TIL",
     permissions: { ...defaultPermissions, service: true, contracts: true },
     leads: { ...defaultLeads, firefighting: true }

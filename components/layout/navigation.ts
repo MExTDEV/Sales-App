@@ -3,6 +3,7 @@ import {
   Boxes,
   CalendarDays,
   ClipboardList,
+  FileStack,
   LayoutDashboard,
   RefreshCw,
   Settings,
@@ -25,6 +26,7 @@ export const navItems: Array<{ id: AppView; labelKey: string }> = [
   { id: "dashboard", labelKey: "nav.dashboard" },
   { id: "agenda", labelKey: "nav.agenda" },
   { id: "service", labelKey: "nav.service" },
+  { id: "pst", labelKey: "nav.pst" },
   { id: "cashSheet", labelKey: "nav.cashSheet" },
   { id: "sync", labelKey: "nav.sync" }
 ];
@@ -34,6 +36,7 @@ export const sidebarItems: Array<{
   labelKey: string;
   icon: LucideIcon;
   superadminOnly?: boolean;
+  requiresPstAccess?: boolean;
   nested?: Array<{ id?: AppView; labelKey: string }>;
 }> = [
   { id: "dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard },
@@ -41,6 +44,23 @@ export const sidebarItems: Array<{
   { id: "myPreparation", labelKey: "nav.myPreparation", icon: ClipboardList },
   { id: "myTeam", labelKey: "nav.myTeam", icon: UsersRound },
   { id: "agenda", labelKey: "nav.agenda", icon: CalendarDays },
+  {
+    id: "pstDashboard",
+    labelKey: "nav.pst",
+    icon: FileStack,
+    requiresPstAccess: true,
+    nested: [
+      { id: "pstDashboard", labelKey: "pst.nav.dashboard" },
+      { id: "pstSegments", labelKey: "pst.nav.segments" },
+      { id: "pstRoutes", labelKey: "pst.nav.routes" },
+      { id: "pstProspection", labelKey: "pst.nav.prospection" },
+      { id: "pstMaps", labelKey: "pst.nav.maps" },
+      { id: "pstApprovals", labelKey: "pst.nav.approvals" },
+      { id: "pstRepresentatives", labelKey: "pst.nav.representatives" },
+      { id: "pstPlanning", labelKey: "pst.nav.planning" },
+      { id: "pstQuality", labelKey: "pst.nav.quality" }
+    ]
+  },
   {
     labelKey: "nav.service",
     icon: Wrench,

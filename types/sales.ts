@@ -29,6 +29,16 @@ export type AppView =
   | "serviceContracts"
   | "serviceAssets"
   | "cashSheet"
+  | "pst"
+  | "pstDashboard"
+  | "pstSegments"
+  | "pstRoutes"
+  | "pstProspection"
+  | "pstMaps"
+  | "pstApprovals"
+  | "pstRepresentatives"
+  | "pstPlanning"
+  | "pstQuality"
   | "sync"
   | "technicalDesign"
   | "technicalTables"
@@ -109,6 +119,7 @@ export type MockUser = {
   country: CountryCode;
   establishmentNumber: string;
   isActive: boolean;
+  hasPstAccess: boolean;
   timezone: string;
   preferredLanguage: Language;
   teamId?: string;
@@ -127,10 +138,227 @@ export type ManagedUser = {
   roleId: string;
   isTeamSupervisor: boolean;
   isActive: boolean;
+  hasPstAccess: boolean;
   establishmentNumber: string;
   permissions: Record<string, boolean>;
   leads: Record<string, boolean>;
   photo?: DesignAssetPreview;
+};
+
+export type PstWorkflowStep =
+  | "sql_documents_prepared"
+  | "mailcom_done"
+  | "multiroute_done"
+  | "regiograph_done"
+  | "navision_prepared"
+  | "exported_to_pst_server"
+  | "waiting_for_approval"
+  | "approved";
+
+export type PstProjectStatus =
+  | "concept"
+  | PstWorkflowStep
+  | "rejected"
+  | "archived";
+
+export type PstProject = {
+  id: string;
+  sectorNumber: string;
+  country: CountryCode;
+  status: PstProjectStatus;
+  assignedToUserId: string;
+  assignedToName: string;
+  createdAt: string;
+  updatedAt: string;
+  createdByUserId: string;
+  notes: string;
+  sqlDocuments: {
+    reportName: string;
+    storageLocation: string;
+    generatedAt?: string;
+    generatedBy?: string;
+    status: "pending" | "generated" | "failed";
+    attachmentName?: string;
+  };
+  mailcom: {
+    importFile?: string;
+    importedAt?: string;
+    recordCount: number;
+    errorCount: number;
+    status: "pending" | "registered" | "processed" | "error";
+    notes: string;
+  };
+  multiroute: {
+    excelFile?: string;
+    uploadStatus: "pending" | "uploaded" | "calculated" | "warning";
+    addressCount: number;
+    routeCount: number;
+    warningCount: number;
+    processedBy?: string;
+    processedAt?: string;
+  };
+  regiograph: {
+    fileLocation: string;
+    checked: boolean;
+    checkedBy?: string;
+    checkedAt?: string;
+    notes: string;
+  };
+  navision: {
+    navisionTaskNumber?: string;
+    navisionStatus: "pending" | "prepared" | "exported";
+    exportReady: boolean;
+    exportedAt?: string;
+    exportedBy?: string;
+    activateForTablet: boolean;
+    area: string;
+    notes: string;
+  };
+  pstServer: {
+    lastExportedAt?: string;
+    exportStatus: "pending" | "exported" | "error";
+    recordCount: number;
+    errorCount: number;
+    targetEnvironment: string;
+    logDetails: string;
+  };
+};
+
+export type PstHostess = {
+  id: string;
+  sequenceNumber: string;
+  name: string;
+  inService: boolean;
+  visibleOnPstServer: boolean;
+  exportViaWebsite: boolean;
+  lastExportedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+  notes: string;
+};
+
+export type PstApprovalStatus = "pending" | "approved" | "rejected" | "cancelled";
+
+export type PstApproval = {
+  id: string;
+  projectId: string;
+  approvalType: string;
+  requestedByUserId: string;
+  requestedByName: string;
+  assignedToUserId: string;
+  assignedToName: string;
+  status: PstApprovalStatus;
+  requestedAt: string;
+  decidedAt?: string;
+  decisionByUserId?: string;
+  comment: string;
+};
+
+export type PstAuditLog = {
+  id: string;
+  entityType: "project" | "hostess" | "approval";
+  entityId: string;
+  action: string;
+  oldValue?: Record<string, unknown>;
+  newValue?: Record<string, unknown>;
+  userId: string;
+  userName: string;
+  createdAt: string;
+  comment: string;
+};
+
+export type PstSegmentStatus = "concept" | "ingepland" | "lopend" | "voorbereiding" | "afgewerkt";
+
+export type PstProspectStatus = "visited" | "not_visited" | "planned";
+
+export type PstRouteStatus = "concept" | "ingepland" | "lopend" | "afgewerkt";
+
+export type PstSegment = {
+  id: string;
+  number: string;
+  description: string;
+  sectorCode: string;
+  sectorName: string;
+  region: string;
+  representativeId: string;
+  representativeName: string;
+  plannedDate: string;
+  status: PstSegmentStatus;
+  notes: string;
+  boundaryGeoJson?: {
+    type: "Polygon";
+    coordinates: [number, number][][];
+  };
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type PstProspect = {
+  id: string;
+  segmentId: string;
+  name: string;
+  street: string;
+  postalCode: string;
+  city: string;
+  country: CountryCode;
+  status: PstProspectStatus;
+  lastVisitedAt?: string;
+  assignedRepresentativeId: string;
+  latitude: number;
+  longitude: number;
+};
+
+export type PstRoute = {
+  id: string;
+  number: string;
+  name: string;
+  segmentId?: string;
+  representativeId: string;
+  representativeName: string;
+  date: string;
+  status: PstRouteStatus;
+  totalDistanceKm?: number;
+  estimatedTravelTimeMin?: number;
+  startAddress?: string;
+  endAddress?: string;
+  startLocation?: {
+    label: string;
+    latitude: number;
+    longitude: number;
+  };
+  endLocation?: {
+    label: string;
+    latitude: number;
+    longitude: number;
+  };
+  calculatedAt?: string;
+};
+
+export type PstRouteStop = {
+  id: string;
+  routeId: string;
+  prospectId: string;
+  sequence: number;
+  calculatedDistanceFromPreviousKm?: number;
+  calculatedTravelTimeFromPreviousMin?: number;
+  visited?: boolean;
+  latitude?: number;
+  longitude?: number;
+};
+
+export type PstVisit = {
+  id: string;
+  prospectId: string;
+  prospectName: string;
+  representativeName: string;
+  status: PstProspectStatus;
+  visitedAt: string;
+};
+
+export type PstRepresentative = {
+  id: string;
+  name: string;
+  region: string;
 };
 
 export type Appointment = {

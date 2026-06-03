@@ -79,6 +79,7 @@ export function createMockUser({
     country: country.code,
     establishmentNumber: country.code === "BE" ? "BE-ROE" : country.code === "NL" ? "NL-TIL" : "DE-ESS",
     isActive: true,
+    hasPstAccess: scopedRole === "superadmin" || scopedRole === "admin" || scopedRole === "sales_leader" || scenario === "editable_service",
     timezone: timezone || country.timezone,
     preferredLanguage: preferredLanguage === "fr" || preferredLanguage === "de" ? preferredLanguage : "nl",
     teamId: scopedRole === "representative" ? "team-north" : "team-leadership",

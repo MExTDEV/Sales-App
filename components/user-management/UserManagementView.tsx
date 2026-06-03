@@ -174,6 +174,7 @@ export function UserManagementView({
                 <TextField label={t("userManagement.field.mobile")} value={form.mobile} onChange={(value) => updateForm("mobile", value)} />
                 <TextField label={t("userManagement.field.establishmentNumber")} value={form.establishmentNumber} onChange={(value) => updateForm("establishmentNumber", value)} />
                 <Checkbox checked={form.isActive} label={t("userManagement.field.active")} onChange={(checked) => updateForm("isActive", checked)} />
+                <Checkbox checked={form.hasPstAccess} label={t("userManagement.field.hasPstAccess")} onChange={(checked) => updateForm("hasPstAccess", checked)} />
               </div>
               <div className="mt-4">
                 <PhotoUpload photo={form.photo} t={t} onPhoto={handlePhoto} />
@@ -296,6 +297,7 @@ function UserList({
               <th className="border-b border-slate-200 py-3 pr-4">{t("userManagement.field.team")}</th>
               <th className="border-b border-slate-200 py-3 pr-4">{t("userManagement.field.establishmentNumber")}</th>
               <th className="border-b border-slate-200 py-3 pr-4">{t("userManagement.field.active")}</th>
+              <th className="border-b border-slate-200 py-3 pr-4">{t("userManagement.field.hasPstAccess")}</th>
               <th className="border-b border-slate-200 py-3">{t("userManagement.table.actions")}</th>
             </tr>
           </thead>
@@ -311,6 +313,9 @@ function UserList({
                 <td className="border-b border-slate-100 py-3 pr-4 font-semibold">{item.establishmentNumber}</td>
                 <td className="border-b border-slate-100 py-3 pr-4">
                   <Badge tone={item.isActive ? "green" : "slate"}>{item.isActive ? t("userManagement.status.active") : t("userManagement.status.inactive")}</Badge>
+                </td>
+                <td className="border-b border-slate-100 py-3 pr-4">
+                  <Badge tone={item.hasPstAccess ? "blue" : "slate"}>{item.hasPstAccess ? t("common.yes") : t("common.no")}</Badge>
                 </td>
                 <td className="border-b border-slate-100 py-3">
                   <div className="flex flex-wrap gap-2">
@@ -485,6 +490,7 @@ function createEmptyForm(id: string, user: MockUser, roleId: string): ManagedUse
     roleId,
     isTeamSupervisor: false,
     isActive: true,
+    hasPstAccess: false,
     establishmentNumber: "",
     permissions: { ...emptyPermissions },
     leads: { ...emptyLeads },

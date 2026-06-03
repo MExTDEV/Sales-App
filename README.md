@@ -35,10 +35,19 @@ types/
 
 ```bash
 npm install
-npm run dev
+npm run build
+npm run start:local
 ```
 
-Open `http://localhost:3000`.
+Open `http://localhost:3001`.
+
+On Windows you can also double-click `start-salesapp-local.cmd`. It starts the stable local production server on port `3001`.
+
+For active development with hot reload:
+
+```bash
+npm run dev:local
+```
 
 ## Validate
 
