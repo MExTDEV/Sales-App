@@ -87,6 +87,158 @@ export function createMockUser({
   };
 }
 
+const preparationDates = [
+  "2026-06-04",
+  "2026-06-05",
+  "2026-06-06",
+  "2026-06-07",
+  "2026-06-08",
+  "2026-06-09",
+  "2026-06-10",
+  "2026-06-11",
+  "2026-06-12",
+  "2026-06-13",
+  "2026-06-14",
+  "2026-06-15",
+  "2026-06-16",
+  "2026-06-17",
+  "2026-06-18"
+];
+
+type PreparationTemplate = [string, Appointment["type"], string, string, string, string, string, string, number, number, number];
+
+const preparationTemplates: PreparationTemplate[] = [
+  ["08:00", "customer", "C-SA-101", "Apotheek Zuidrand", "Healthcare", "Plantin en Moretuslei 94", "2018", "Superadmin review: contract en AED-status nakijken.", 2, 3, 0],
+  ["09:10", "prospect", "P-SA-202", "Facility Point Berchem", "Saleslijst", "Grotesteenweg 214", "2600", "Prospectvoorbereiding voor demo preventiemateriaal.", 0, 0, 0],
+  ["10:20", "customer", "C-SA-303", "Medisch Centrum Harmonie", "Healthcare", "Mechelsesteenweg 184", "2018", "Open werkbon en onderhoudscontract controleren.", 1, 2, 1],
+  ["11:30", "follow_up", "C-SA-404", "Logistics City Antwerpen", "Logistics", "Lange Leemstraat 372", "2018", "Opvolging prijsafspraak en leveringsplanning.", 1, 0, 0],
+  ["13:00", "customer", "C-SA-505", "Hotel Sint-Andries", "Hospitality", "Nationalestraat 41", "2000", "Historiek orders en facturen voorbereiden.", 2, 1, 0],
+  ["14:10", "demo", "P-SA-606", "Sportcentrum Zuid", "Outbound", "Vlaamsekaai 18", "2000", "Demo AED-trainer en blusdekenpakket voorbereiden.", 0, 0, 0],
+  ["15:30", "prospect", "P-SA-707", "Retailgroep Kiel", "Preprospect", "Kielsevest 43", "2020", "Segmentinformatie en eerste verkoopkansen klaarzetten.", 0, 0, 0],
+  ["16:45", "customer", "C-SA-808", "KMO Park Merksem", "B2B", "Bredabaan 421", "2170", "Laatste aankopen, open servicepunten en omzetstatus nakijken.", 3, 1, 0]
+];
+
+const preparationCoordinates: Record<string, { latitude: number; longitude: number }> = {
+  "Plantin en Moretuslei 94": { latitude: 51.2097, longitude: 4.4282 },
+  "Grotesteenweg 214": { latitude: 51.1975, longitude: 4.4202 },
+  "Mechelsesteenweg 184": { latitude: 51.2033, longitude: 4.414 },
+  "Lange Leemstraat 372": { latitude: 51.2049, longitude: 4.4079 },
+  "Nationalestraat 41": { latitude: 51.2161, longitude: 4.3985 },
+  "Vlaamsekaai 18": { latitude: 51.2093, longitude: 4.3929 },
+  "Kielsevest 43": { latitude: 51.2008, longitude: 4.3849 },
+  "Bredabaan 421": { latitude: 51.241, longitude: 4.436 }
+};
+
+const representativePreparationAppointments = preparationTemplates.map((template, index) =>
+  preparationAppointmentFromTemplate(`prep-rep-${index + 1}`, template, { date: "2026-06-05", assignedUserId: "u-rep-01" })
+);
+
+const superadminPreparationAppointments = preparationDates.flatMap((date) =>
+  preparationTemplates.map((template, index) =>
+    preparationAppointmentFromTemplate(`prep-sa-${date}-${index + 1}`, template, { date, assignedUserId: "u-superadmin" })
+  )
+);
+
+const preparationAppointments: Appointment[] = [
+  ...representativePreparationAppointments,
+  ...superadminPreparationAppointments
+];
+
+function preparationAppointmentFromTemplate(
+  id: string,
+  template: PreparationTemplate,
+  options: {
+    assignedUserId?: string;
+    date?: string;
+  }
+) {
+  const [time, type, number, name, segmentOrSource, line1, postalCode, notes, contracts, aeds, workOrders] = template;
+
+  return preparationAppointment(id, time, type, number, name, segmentOrSource, line1, postalCode, notes, contracts, aeds, workOrders, options);
+}
+
+function preparationAppointment(
+  id: string,
+  time: string,
+  type: Appointment["type"],
+  number: string,
+  name: string,
+  segmentOrSource: string,
+  line1: string,
+  postalCode: string,
+  notes: string,
+  contracts: number,
+  aeds: number,
+  workOrders: number,
+  options: {
+    assignedUserId?: string;
+    date?: string;
+  } = {}
+): Appointment {
+  const coordinates = preparationCoordinates[line1];
+
+  const base = {
+    id,
+    date: options.date ?? "2026-06-05",
+    time,
+    type,
+    status: "planned" as const,
+    invoiceRevenue: 0,
+    orderRevenue: 0,
+    assignedUserId: options.assignedUserId ?? "u-rep-01",
+    contacts: [
+      {
+        name: "Contactpersoon",
+        role: "Aankoop",
+        phone: "+32 470 00 00 00",
+        email: "contact@example.com",
+        isActive: true
+      }
+    ],
+    address: {
+      line1,
+      postalCode,
+      city: "Antwerpen",
+      country: "BE" as const,
+      isActive: true,
+      latitude: coordinates.latitude,
+      longitude: coordinates.longitude
+    },
+    notes,
+    service: {
+      contracts,
+      aeds,
+      workOrders,
+      lastIntervention: contracts > 0 ? "28/05/2026" : "Geen historiek",
+      maintenanceStatus: workOrders > 0 ? "Werkbon open voor opvolging" : "Geen blokkeringen"
+    },
+    history: [
+      { at: "04/06/2026 16:10", text: "Afspraak toegevoegd aan voorbereiding volgende werkdag." },
+      { at: "04/06/2026 16:20", text: "Voorbereidingsnotitie beschikbaar." }
+    ]
+  };
+
+  return type === "prospect" || type === "demo"
+    ? {
+        ...base,
+        prospect: {
+          number,
+          name,
+          source: segmentOrSource,
+          potential: type === "demo" ? "High" : "Medium"
+        }
+      }
+    : {
+        ...base,
+        customer: {
+          number,
+          name,
+          vat: "BE0000.000.000",
+          segment: segmentOrSource
+        }
+      };
+}
+
 export const appointments: Appointment[] = [
   {
     id: "apt-1001",
@@ -470,7 +622,8 @@ export const appointments: Appointment[] = [
       maintenanceStatus: "Niet van toepassing"
     },
     history: [{ at: "30/05/2026 09:05", text: "Preprospect toegevoegd aan agenda." }]
-  }
+  },
+  ...preparationAppointments
 ];
 
 export const cashSheet: CashSheet = {

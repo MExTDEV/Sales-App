@@ -397,6 +397,8 @@ export type Appointment = {
     city: string;
     country: CountryCode;
     isActive: boolean;
+    latitude?: number;
+    longitude?: number;
   };
   notes: string;
   service: {

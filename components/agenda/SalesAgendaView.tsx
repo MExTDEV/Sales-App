@@ -1,7 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { CalendarDays, CheckCircle2, Clock, TimerOff, UserX } from "lucide-react";
 import { AppointmentList } from "@/components/agenda/AppointmentList";
-import { ActionButton } from "@/components/shared/ui";
 import type { Appointment, AppointmentStatus, TranslationFn } from "@/types/sales";
 
 type SalesAgendaViewProps = {
@@ -58,26 +57,28 @@ export function SalesAgendaView({
   };
 
   return (
-    <div className="grid gap-4">
-      <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_18px_48px_rgba(15,23,42,0.08)]">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="text-xs font-black uppercase tracking-[0.22em] text-[#003B83]">{t("nav.agenda")}</p>
-            <h2 className="mt-1 text-2xl font-black tracking-tight text-slate-950">{t("agenda.title")}</h2>
-            <p className="mt-1 text-sm font-medium text-slate-500">{t("agenda.subtitle")}</p>
+    <div className="grid gap-3">
+      <section className="rounded-lg border border-blue-100 bg-white shadow-sm">
+        <div className="flex flex-wrap items-center gap-3 border-b border-blue-50 px-4 py-3">
+          <div className="grid size-11 place-items-center rounded-lg bg-blue-100 text-[#003B83]">
+            <CalendarDays aria-hidden="true" size={22} strokeWidth={2} />
           </div>
-          <div className="flex flex-wrap items-end gap-3">
-            <div className="grid gap-2">
-              <span className="text-xs font-black uppercase tracking-[0.16em] text-slate-500">{t("agenda.date")}</span>
-              <span className="inline-flex min-h-11 items-center rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-bold text-slate-800">
+          <div className="min-w-0 flex-1">
+            <p className="text-[0.68rem] font-black uppercase tracking-wide text-[#003B83]">{t("nav.agenda")}</p>
+            <h2 className="truncate text-xl font-black text-slate-950">{t("agenda.title")}</h2>
+            <p className="truncate text-xs font-semibold text-slate-500">{t("agenda.subtitle")}</p>
+          </div>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <div className="grid gap-1">
+              <span className="inline-flex min-h-9 items-center rounded-md border border-blue-100 bg-blue-50 px-3 text-xs font-black text-[#003B83]">
                 {formatDate(currentDate)}
               </span>
             </div>
-            <ActionButton label={t("agenda.newAppointment")} onClick={() => undefined} />
-            <ActionButton label={t("agenda.preProspect")} onClick={() => undefined} />
+            <HeaderAction label={t("agenda.newAppointment")} onClick={() => undefined} />
+            <HeaderAction label={t("agenda.preProspect")} onClick={() => undefined} />
           </div>
         </div>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+        <div className="grid gap-2 px-4 py-3 sm:grid-cols-2 xl:grid-cols-5">
           <AgendaCounter icon={<CalendarDays aria-hidden="true" size={20} strokeWidth={2} />} label={t("agenda.counter.total")} value={counters.total} />
           <AgendaCounter icon={<Clock aria-hidden="true" size={20} strokeWidth={2} />} label={t("agenda.counter.open")} value={counters.open} />
           <AgendaCounter icon={<CheckCircle2 aria-hidden="true" size={20} strokeWidth={2} />} label={t("agenda.counter.closed")} value={counters.closed} />
@@ -86,7 +87,7 @@ export function SalesAgendaView({
         </div>
       </section>
 
-      <div className="grid gap-4">
+      <div className="grid gap-3">
         <AppointmentList
           emptyMessage={t("agenda.empty.open")}
           items={open}
@@ -173,15 +174,23 @@ export function SalesAgendaView({
 
 function AgendaCounter({ icon, label, value }: { icon: ReactNode; label: string; value: number }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-gradient-to-br from-white to-blue-50/60 p-3 shadow-[0_10px_28px_rgba(15,23,42,0.06)]">
-      <div className="flex items-center gap-3">
-        <span className="grid size-9 place-items-center rounded-lg bg-[#003B83]/10 text-[#003B83]">{icon}</span>
+    <div className="rounded-lg border border-slate-200 bg-slate-50 p-2 shadow-sm">
+      <div className="flex items-center gap-2.5">
+        <span className="grid size-8 place-items-center rounded-md bg-[#003B83]/10 text-[#003B83]">{icon}</span>
         <div>
-          <p className="text-[0.68rem] font-black uppercase tracking-[0.13em] text-slate-500">{label}</p>
-          <p className="mt-0.5 text-xl font-black tracking-tight text-slate-950">{value}</p>
+          <p className="text-[0.65rem] font-black uppercase tracking-wide text-slate-500">{label}</p>
+          <p className="text-lg font-black tracking-tight text-slate-950">{value}</p>
         </div>
       </div>
     </div>
+  );
+}
+
+function HeaderAction({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <button className="min-h-9 rounded-md border border-slate-200 bg-white px-3 text-xs font-black text-slate-900 shadow-sm transition hover:border-blue-200 hover:bg-blue-50" onClick={onClick} type="button">
+      {label}
+    </button>
   );
 }
 

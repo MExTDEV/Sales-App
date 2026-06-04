@@ -1,6 +1,7 @@
 "use client";
 
 import { Badge } from "@/components/shared/ui";
+import { UserAvatar } from "@/components/shared/UserAvatar";
 import { Camera, Pencil, Save, ShieldCheck, UserCog, UserPlus, UsersRound, UserX, X, type LucideIcon } from "lucide-react";
 import { useState } from "react";
 import type { CountryCode, Language, ManagedUser, MockUser, TechnicalRole, TranslationFn } from "@/types/sales";
@@ -45,11 +46,13 @@ const emptyLeads: Record<LeadKey, boolean> = {
 
 export function UserManagementView({
   initialUsers,
+  onUsersChange,
   roles,
   t,
   user
 }: {
   initialUsers: ManagedUser[];
+  onUsersChange?: (users: ManagedUser[]) => void;
   roles: TechnicalRole[];
   t: TranslationFn;
   user: MockUser;
@@ -91,17 +94,23 @@ export function UserManagementView({
   function handleSave() {
     const savedUser = fromForm(form);
 
-    setUsers((current) =>
-      mode === "create"
+    setUsers((current) => {
+      const nextUsers = mode === "create"
         ? [...current, savedUser]
-        : current.map((item) => (item.id === savedUser.id ? savedUser : item))
-    );
+        : current.map((item) => (item.id === savedUser.id ? savedUser : item));
+      onUsersChange?.(nextUsers);
+      return nextUsers;
+    });
     setMode("list");
     setMessage(t("userManagement.saved"));
   }
 
   function handleDeactivate(id: string) {
-    setUsers((current) => current.map((item) => (item.id === id ? { ...item, isActive: false } : item)));
+    setUsers((current) => {
+      const nextUsers = current.map((item) => (item.id === id ? { ...item, isActive: false } : item));
+      onUsersChange?.(nextUsers);
+      return nextUsers;
+    });
     setMessage(t("userManagement.deactivated"));
   }
 
@@ -121,6 +130,35 @@ export function UserManagementView({
     updateForm("photo", {
       name: file.name,
       previewUrl: URL.createObjectURL(file)
+    });
+    setMessage(t("userManagement.photoUpdated"));
+  }
+
+  function handleListPhoto(id: string, file?: File) {
+    if (!file) {
+      return;
+    }
+
+    setUsers((current) => {
+      const nextUsers = current.map((item) => {
+        if (item.id !== id) {
+          return item;
+        }
+
+        if (item.photo?.previewUrl) {
+          URL.revokeObjectURL(item.photo.previewUrl);
+        }
+
+        return {
+          ...item,
+          photo: {
+            name: file.name,
+            previewUrl: URL.createObjectURL(file)
+          }
+        };
+      });
+      onUsersChange?.(nextUsers);
+      return nextUsers;
     });
     setMessage(t("userManagement.photoUpdated"));
   }
@@ -156,7 +194,7 @@ export function UserManagementView({
       )}
 
       {mode === "list" ? (
-        <UserList users={users} t={t} onDeactivate={handleDeactivate} onEdit={handleEdit} />
+        <UserList users={users} t={t} onDeactivate={handleDeactivate} onEdit={handleEdit} onPhoto={handleListPhoto} />
       ) : (
         <>
           <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
@@ -251,11 +289,13 @@ export function UserManagementView({
 }
 
 function UserList({
+  onPhoto,
   users,
   t,
   onDeactivate,
   onEdit
 }: {
+  onPhoto: (id: string, file?: File) => void;
   users: ManagedUser[];
   t: TranslationFn;
   onDeactivate: (id: string) => void;
@@ -292,6 +332,7 @@ function UserList({
         <table className="w-full min-w-[48rem] border-separate border-spacing-0 text-left text-sm">
           <thead>
             <tr className="text-slate-500">
+              <th className="border-b border-slate-200 py-3 pr-4">{t("userManagement.field.photo")}</th>
               <th className="border-b border-slate-200 py-3 pr-4">{t("userManagement.table.name")}</th>
               <th className="border-b border-slate-200 py-3 pr-4">{t("userManagement.field.country")}</th>
               <th className="border-b border-slate-200 py-3 pr-4">{t("userManagement.field.team")}</th>
@@ -304,6 +345,9 @@ function UserList({
           <tbody>
             {visibleUsers.map((item) => (
               <tr key={item.id}>
+                <td className="border-b border-slate-100 py-3 pr-4">
+                  <UserPhoto user={item} onPhoto={(file) => onPhoto(item.id, file)} />
+                </td>
                 <td className="border-b border-slate-100 py-3 pr-4">
                   <p className="font-black text-slate-950">{item.firstName} {item.lastName}</p>
                   <p className="mt-1 text-xs text-slate-500">{item.email}</p>
@@ -362,6 +406,15 @@ function SearchField({
         value={value}
         onChange={(event) => onChange(event.target.value)}
       />
+    </label>
+  );
+}
+
+function UserPhoto({ onPhoto, user }: { onPhoto: (file?: File) => void; user: ManagedUser }) {
+  return (
+    <label className="cursor-pointer transition hover:opacity-80" title="Foto uploaden">
+      <UserAvatar className="size-9" name={`${user.firstName} ${user.lastName}`} photo={user.photo} />
+      <input accept=".png,.jpg,.jpeg,.webp" className="sr-only" type="file" onChange={(event) => onPhoto(event.target.files?.[0])} />
     </label>
   );
 }
@@ -458,11 +511,7 @@ function PhotoUpload({
     <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4">
       <div className="flex flex-wrap items-center gap-4">
         <div className="grid size-24 place-items-center overflow-hidden rounded-xl bg-white shadow-inner">
-          {photo ? (
-            <img alt={t("userManagement.field.photo")} className="h-full w-full object-cover" src={photo.previewUrl} />
-          ) : (
-            <Camera aria-hidden="true" className="text-slate-400" size={30} strokeWidth={2} />
-          )}
+          {photo ? <UserAvatar className="size-20 text-base" name={photo.name} photo={photo} /> : <Camera aria-hidden="true" className="text-slate-400" size={30} strokeWidth={2} />}
         </div>
         <div>
           <p className="text-sm font-bold text-slate-700">{t("userManagement.field.photo")}</p>

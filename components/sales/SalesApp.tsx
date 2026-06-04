@@ -65,6 +65,7 @@ export function SalesApp() {
   const [isLoggedIn, setIsLoggedIn] = useState(launchDefaults.openApp);
   const [view, setView] = useState<AppView>(launchDefaults.view);
   const [appointments, setAppointments] = useState<Appointment[]>(appointmentSeed);
+  const [managedUsers, setManagedUsers] = useState(mockManagedUsers);
   const [selectedAppointmentId, setSelectedAppointmentId] = useState(appointmentSeed[0]?.id ?? "");
   const [depositReported, setDepositReported] = useState(false);
   const [adminUnblocked, setAdminUnblocked] = useState(false);
@@ -87,7 +88,11 @@ export function SalesApp() {
   const t = (key: string) => translate(user.preferredLanguage, key);
   const selectedAppointment = appointments.find((item) => item.id === selectedAppointmentId) ?? appointments[0];
   const duplicateAppointment = appointments.find((item) => item.id === duplicateAppointmentId);
-  const managedProfile = mockManagedUsers.find((item) => item.roleId === user.role && item.country === user.country);
+  const today = currentDateValue();
+  const agendaAppointments = appointments
+    .filter((appointment) => appointment.date === today && appointment.assignedUserId === user.id)
+    .sort((left, right) => left.time.localeCompare(right.time));
+  const managedProfile = managedUsers.find((item) => item.roleId === user.role && item.country === user.country);
   const unresolvedLines = cashSheet.lines.filter((line) => !line.isCleared || !line.isPaid);
   const scenarioUnblocked = scenario === "unblocked" || scenario === "admin_scope" || scenario === "leader_scope";
   const isBlocked =
@@ -102,6 +107,21 @@ export function SalesApp() {
     const nextCountry = countries.find((item) => item.code === value) ?? countries[0];
     setCountry(nextCountry.code);
     setTimezone(nextCountry.timezone);
+  }
+
+  function handleLanguageChange(value: Language) {
+    setLanguage(value);
+
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("salesapp.language", value);
+    }
+  }
+
+  function handleManagedUsersChange(nextUsers: typeof mockManagedUsers) {
+    setManagedUsers((current) => {
+      const nextIds = new Set(nextUsers.map((item) => item.id));
+      return [...current.filter((item) => !nextIds.has(item.id)), ...nextUsers].sort((a, b) => a.id.localeCompare(b.id));
+    });
   }
 
   function handleAppointmentStatus(status: AppointmentStatus) {
@@ -279,6 +299,7 @@ export function SalesApp() {
               isCashSheetBlocked={isBlocked}
               lastSync={lastSync}
               managedUser={managedProfile}
+              onLanguageChange={handleLanguageChange}
               onOpenCashSheet={() => setView("cashSheet")}
               onSync={handleMockSync}
               pendingRecords={pendingRecords}
@@ -290,6 +311,7 @@ export function SalesApp() {
             <MyPreparationView
               appointments={appointments}
               t={t}
+              user={user}
               onOpenAppointment={(appointmentId) => {
                 setSelectedAppointmentId(appointmentId);
                 setView("appointment");
@@ -298,11 +320,11 @@ export function SalesApp() {
           )}
           {view === "agenda" && (
             <SalesAgendaView
-              appointments={appointments}
+              appointments={agendaAppointments}
               duplicateAppointment={duplicateAppointment}
               duplicateDateTime={duplicateDateTime}
               duplicateTime={duplicateTime}
-              currentDate={currentDateValue()}
+              currentDate={today}
               selectedAppointmentId={selectedAppointment.id}
               t={t}
               onCancelDuplicate={() => setDuplicateAppointmentId(undefined)}
@@ -317,10 +339,10 @@ export function SalesApp() {
           )}
           {view === "myTeam" && (
             <MyTeamView
+              managedUsers={managedUsers}
               representatives={teamRepresentatives}
               t={t}
               user={user}
-              onOpenAppointment={handleOpenTeamAppointment}
             />
           )}
           {view === "appointment" && (
@@ -368,7 +390,7 @@ export function SalesApp() {
             <CashSheetView cashSheet={cashSheet} depositReported={depositReported} representativeName={user.name} t={t} onDeposit={() => setDepositReported(true)} />
           )}
           {view === "sync" && <SyncView t={t} />}
-          {view === "userManagement" && <UserManagementView initialUsers={mockManagedUsers} roles={technicalRoles} t={t} user={user} />}
+          {view === "userManagement" && <UserManagementView initialUsers={managedUsers} roles={technicalRoles} t={t} user={user} onUsersChange={handleManagedUsersChange} />}
           {view === "technicalDesign" && (
             <DesignSettingsView
               designAssets={designAssets}
@@ -439,11 +461,12 @@ function getLaunchDefaults() {
   const params = new URLSearchParams(window.location.search);
   const country = parseCountry(params.get("country")) ?? defaults.country;
   const countryTimezone = countries.find((item) => item.code === country)?.timezone ?? defaults.timezone;
+  const persistedLanguage = parseLanguage(window.localStorage.getItem("salesapp.language"));
 
   return {
     role: parseRole(params.get("role")) ?? defaults.role,
     country,
-    language: parseLanguage(params.get("language")) ?? defaults.language,
+    language: parseLanguage(params.get("language")) ?? persistedLanguage ?? defaults.language,
     scenario: parseScenario(params.get("scenario")) ?? defaults.scenario,
     timezone: params.get("timezone") || countryTimezone,
     openApp: params.get("openApp") === "1" || params.get("openApp") === "true",
